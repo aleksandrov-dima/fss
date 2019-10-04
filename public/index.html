@@ -17,7 +17,6 @@
     <script type="text/javascript" src="js/src/gostRandom.js"></script>
     <script type="text/javascript" src="js/src/gostSign.js"></script>
 
-
     <script>
         function loadScript(src) {
             let s = document.createElement('script');
@@ -65,14 +64,14 @@
             return hex.join(':');
         }
 
-        function buildGetLNNumberXML(ctx) {
+            function buildGetLNNumberXML(ctx) {
             //заранее канонизированный подписываемый узел
             const conanizedBody = `<soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="OGRN_1132130001827"><eln:getNewLNNum xmlns:eln="http://ru/ibs/fss/ln/ws/FileOperationsLn.wsdl"><eln:ogrn>1132130001827</eln:ogrn></eln:getNewLNNum></soapenv:Body>`;
             // получаем хеш тела
             return ctx.plugin.digest(ctx.deviceId, ctx.plugin.HASH_TYPE_GOST3411_12_256, conanizedBody, { useHardwareHash: false })
                 .then(bodyDigest => {
                     ctx.bodyDigest = gostCrypto.coding.Base64.encode(gostCrypto.coding.Hex.decode(bodyDigest));
-                    //Вставляем вычисленный хеш подписываемого тела в заранее канонизированный узел SignedInfo
+                    //Вставляем вычесленный хеш подписываемого тела в заранее канонизированный узел SignedInfo
                     const signedInfo = `<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></CanonicalizationMethod><SignatureMethod Algorithm="urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-256"></SignatureMethod><Reference URI="#OGRN_1132130001827"><Transforms><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></Transform></Transforms><DigestMethod Algorithm="urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34112012-256"></DigestMethod><DigestValue>${ctx.bodyDigest}</DigestValue></Reference></SignedInfo>`;
                     //Теперь вычисляем хеш от всего узла SignedInfo
                     return ctx.plugin.digest(ctx.deviceId, ctx.plugin.HASH_TYPE_GOST3411_12_256, signedInfo, { useHardwareHash: false })
@@ -87,9 +86,9 @@
 `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:eln="http://ru/ibs/fss/ln/ws/FileOperationsLn.wsdl">
     <soapenv:Header>
         <wsse:Security soapenv:actor="http://eln.fss.ru/actor/mo/1132130001827">
-        <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">${signedInfo}<SignatureValue>${ctx.bodySignature}</SignatureValue><ds:KeyInfo><wsse:SecurityTokenReference><wsse:Reference URI="#http://eln.fss.ru/actor/mo/1132130001827" /></wsse:SecurityTokenReference></ds:KeyInfo></Signature><wsse:BinarySecurityToken EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" wsu:Id="http://eln.fss.ru/actor/mo/1132130001827">${ctx.senderCert}</wsse:BinarySecurityToken>
+        <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">${signedInfo}<SignatureValue>${ctx.bodySignature}</SignatureValue><ds:KeyInfo><wsse:SecurityTokenReference><wsse:Reference URI="#http://eln.fss.ru/actor/mo/1132130001827" /></wsse:SecurityTokenReference></ds:KeyInfo></Signature><wsse:BinarySecurityToken EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" wsu:Id="http://eln.fss.ru/actor/mo/1132130001827">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</wsse:BinarySecurityToken>
         </wsse:Security>
-    </soapenv:Header>${conanizedBody}</soapenv:Envelope>`;
+	</soapenv:Header>${conanizedBody}</soapenv:Envelope>`;
                         return Promise.resolve(xml);
                     }, error => {Console.info('Ошибка:' + rutoken.errorDescription[error.message]);}
                     );
@@ -145,33 +144,40 @@
             return res;
         }
 
+        function ExpandIvAndData(dataCipherValue) {       
+           let encodeData = gostCrypto.coding.Base64.decode(dataCipherValue);
+
+            let iv = new Uint8Array(encodeData, 0, 8);
+            let data = new Uint8Array(encodeData, 8, encodeData.byteLength - 8);
+            return {iv, data};
+        }
+        
+
         function pluginSign(ctx) {
             // загружаем плагин
             return initPlugin()
                 .then(plugin => {
                     ctx.plugin = plugin;
                     return plugin.enumerateDevices().then(devices => {
-                        ctx.deviceId = 0;
-                        // входим на устройство
-                        return plugin.login(ctx.deviceId, '12345678')
-                            .then(_ => {
-                                // получаем список сертификатов - у нас нужный сертификат первый в категории USER
-                                return plugin.enumerateCertificates(ctx.deviceId, plugin.CERT_CATEGORY_USER)
-                                    .then(certs => {
-                                        ctx.certId = certs[0];
-                                        // plugin.parseCertificate(ctx.deviceId, ctx.certId).then(data => console.log(data));
-                                        // получаем индентификатор ключа, привязанного к сертификату
-                                        return plugin.getKeyByCertificate(ctx.deviceId, ctx.certId)
-                                            .then(keyId => {
-                                                ctx.keyId = keyId;
-                                                // сам сертификат нам тоже нужен - он передается внутри XML
-                                                return plugin.getCertificate(ctx.deviceId, ctx.certId).then(cert => {
-                                                    ctx.senderCert = extractPEMBody(cert).trim();
-                                                    // формируем XML
-                                                    return buildGetLNNumberXML(ctx);
-                                                });
-                                            });
-                                    })
+                        ctx.deviceId = 0;                         
+                        // получаем список сертификатов - у нас нужный сертификат первый в категории USER
+                        return plugin.enumerateCertificates(ctx.deviceId, plugin.CERT_CATEGORY_USER)
+                            .then(certs => {
+                                ctx.certId = certs[0];
+
+                                // получаем индентификатор ключа, привязанного к сертификату
+                                return plugin.getKeyByCertificate(ctx.deviceId, ctx.certId)
+                                    .then(keyId => {
+                                        ctx.keyId = keyId;
+                                        // сам сертификат нам тоже нужен - он передается внутри XML
+                                        return plugin.getCertificate(ctx.deviceId, ctx.certId).then(cert => {
+                                            ctx.senderCert = extractPEMBody(cert).trim();                                            
+                                            // формируем XML
+                                            return buildGetLNNumberXML(ctx);
+                                        });
+                                    });
+
+                                
                             })
                     });
                 })
@@ -241,11 +247,11 @@
         // шфирование без CMS нашим закрытым ключом
         function jsEncryptRawPrivateKey(ctx) {
             // создаем объет-сертификат из загруженных данных
-            let recipientCert = new gostCrypto.cert.X509(ctx.certData);
+            let recipientCert = new gostCrypto.cert.X509(ctx.certData);//certData
             let senderCert = new gostCrypto.cert.X509(ctx.senderCert);
             let encryptionProvider = recipientCert.getProvider();
             let keyEncryptionAlgorithm = expand(recipientCert.subjectPublicKeyInfo.algorithm);
-            keyEncryptionAlgorithm.ukm = getSeed(8);
+            keyEncryptionAlgorithm.ukm =  getSeed(8);
             let iv = getSeed(8);
             let data = gostCrypto.coding.Chars.decode(ctx.data, 'utf-8');
 
@@ -291,7 +297,7 @@
                                 let encryptedKey = gostCrypto.asn1.GostEncryptedKey(keyEncryptionAlgorithm).encode({
                                     algorithm: keyEncryptionAlgorithm,
                                     sessionEncryptedKey: wrappedKey
-                                });
+                                });                                
                                 return Promise.resolve({
                                     key: gostCrypto.coding.Base64.encode(encryptedKey),
                                     data: gostCrypto.coding.Base64.encode(ivAndData(iv, encryptedData))
@@ -300,6 +306,54 @@
                     });
                 });
             });
+        }
+
+        //расшифровка ответа от ФСС
+        function jsDecryptRawPrivateKey(ctx){
+            let senderCert = new gostCrypto.cert.X509(ctx.senderCert);
+            let privateKeyID = ctx.keyId;
+            let keyEncryptionAlgorithm = expand(senderCert.subjectPublicKeyInfo.algorithm);
+            let keyTransportString = gostCrypto.coding.Base64.decode(ctx.keyCipherValue);
+            let keyTransport = gostCrypto.asn1.GostEncryptedKey(keyEncryptionAlgorithm).decode(keyTransportString);
+            let encryptionProvider = senderCert.getProvider();
+
+            let pubEphemerKey = keyTransport.item.transportParameters.ephemeralPublicKey;  
+            let encryptedKey = keyTransport.item.sessionEncryptedKey; 
+            let userKeyMaterial = keyTransport.item.transportParameters.ukm;
+
+            return ctx.plugin.derive(ctx.deviceId, privateKeyID, buf2hex(pubEphemerKey.buffer), {
+                        ukm: buf2hex(userKeyMaterial)
+                        }).then(wrappingKeyHex => {
+                            return gostCrypto.subtle.importKey('raw', gostCrypto.coding.Hex.decode(wrappingKeyHex), {
+                                    mode: 'ES',
+                                    name: 'GOST 28147',
+                                    ukm: userKeyMaterial,
+                                    version: 1989
+                                }, false, ['unwrapKey']);
+                            }).then(keyDecryptionKey => {
+                                let unwrapAlgorithm = expand(encryptionProvider.wrapping, { ukm: userKeyMaterial });
+                                let unwrappedKeyAlgorithm = {name: 'GOST28147'};
+                                // Unwrap contentEncryptionKey using keyDecryptionKey
+                                return gostCrypto.subtle.unwrapKey('raw', encryptedKey, keyDecryptionKey, 
+                                    unwrapAlgorithm, unwrappedKeyAlgorithm, false, ['decrypt']);
+                            }).then(contentEncryptionKey => {
+                                let ivanddata = ExpandIvAndData(ctx.dataCipherValue);
+                                // Decrypt message
+                                return gostCrypto.subtle.decrypt({ name: 'GOST 28147-CBC', iv: ivanddata.iv, keyMeshing: 'CPCBC' }, contentEncryptionKey,
+                                ivanddata.data);
+                            }).then(data => {
+                                // unpadding data manually (ISO10126)
+                                let data_view = new Uint8Array(data);
+                                let padcount = data_view[data_view.length - 1];
+                                let data_tmp = new ArrayBuffer(data_view.length - padcount);
+                                let dtv = new Uint8Array(data_tmp);
+
+                                for(let i = 0; i < data_view.length - padcount; ++i)
+                                    dtv[i] = data_view[i];
+                                    
+                                return gostCrypto.coding.Chars.encode(dtv.buffer, 'utf-8');
+                            });
+
         }
 
         // построить XML по сертификату, ключу и данным
@@ -331,20 +385,44 @@
 </soapenv:Envelope>`;
         }
 
-        function putData(id, data) {
-            document.getElementById(id).value = data;
+        function parseXml(xml) {
+            var dom = null;
+            if (window.DOMParser) {
+                try { 
+                    dom = (new DOMParser()).parseFromString(xml, "text/xml"); 
+                } 
+                catch (e) { dom = null; }
+            }
+            else if (window.ActiveXObject) {
+                try {
+                    dom = new ActiveXObject('Microsoft.XMLDOM');
+                    dom.async = false;
+                    if (!dom.loadXML(xml)) // parse error ..
+
+                        window.alert(dom.parseError.reason + dom.parseError.srcText);
+                } 
+                catch (e) { dom = null; }
+            }
+            else
+                alert("cannot parse xml string!");
+            return dom;
+            }
+
+            function putData(id, data) {
+                document.getElementById(id).value = data;
         }
 
         // Запуск процесса подписания и шифрования
         function process() {
             // запрашиваем сертификат с сервера
-            return request('GET', 'FSS_TEST_CERT_2019_34.10-2012.cer').then(certData => {
+            //return request('GET', 'FSS_TEST_CERT_2019_34.10-2012.cer').then(certData => {
+            return request('GET', 'FSS_TEST_CERT_2020.cer').then(certData => {
 
                 // контекст
                 let ctx = {
                     certData: certData,     // данные сертификата ФСС
-                    ogrn: '1022402135260',  // тестовый ОГРН
-                    crypt: false            // требуется ли шифрование
+                    ogrn: '1022102833500',  // тестовый ОГРН
+                    crypt: true             // требуется ли шифрование
                 }
 
                 // формируем XML получения нового номера больничного
@@ -368,20 +446,31 @@
                     // если мы дошли до сюда, то значит нам надо шифрование
                     return jsEncryptRawPrivateKey(ctx).then(encriptedRes => {
                         // посылаем данные на сервер для получения ответа от ФСС
-                        let cryptedXML = buildEncriptedXML(ctx.senderCert, encriptedRes.key, encriptedRes.data);
+                        let cryptedXML = buildEncriptedXML(ctx.senderCert, encriptedRes.key, encriptedRes.data);                        
                         putData('cryptedXML', cryptedXML);
                         return request('POST', '/fss', 'json', {
                             action: 'getNewLNNum',
                             crypt: true,
                             data: cryptedXML
-                        }).then(answer => {
-                            // выводим ответ от сервера в консоль
-                            putData('answer', JSON.stringify(answer));
+                        }).then(answer => {                            
+                            let domXml = parseXml(answer.resp);
+                            let cipherData = domXml.getElementsByTagName('xenc:CipherData');
+                            if(cipherData.length > 0){
+                                ctx.keyCipherValue = cipherData[0].getElementsByTagName('xenc:CipherValue')[0].textContent;
+                                ctx.dataCipherValue = cipherData[1].getElementsByTagName('xenc:CipherValue')[0].textContent;
+                                jsDecryptRawPrivateKey(ctx).then(decryptAnswer => {
+                                    // выводим расшифрованный ответ в консоль
+                                    putData('answer', decryptAnswer);    
+                                });   
+                            } else{
+                                // что-то пошло не так, выводим то что есть в консоль
+                                putData('answer', answer.resp);   
+                            }                     
                         });
                     });
                 });
             });
-        }
+        }        
     </script>
 
 </head>
